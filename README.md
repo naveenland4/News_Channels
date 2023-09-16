@@ -1,7 +1,7 @@
 
 <h1 align="center"> YouTube_to_m3u </h1>
 
-[![M3U generator for YouTube](https://github.com/naveenland4/YouTube_to_m3u/actions/workflows/m3u_Generator.yml/badge.svg)](https://github.com/naveenland4/YouTube_to_m3u/actions/workflows/m3u_Generator.yml)
+[![M3U generator for YouTube](https://github.com/naveenland4/News_Channels/actions/workflows/m3u_Generator.yml/badge.svg)](https://github.com/naveenland4/News_Channels/actions/workflows/m3u_Generator.yml)
 
 ``` bash
 
