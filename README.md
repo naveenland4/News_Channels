@@ -1,5 +1,5 @@
 
-<h1 align="center"> YouTube_to_m3u </h1>
+<h1 align="center"> News Channel Playlist </h1>
 
 [![M3U generator for YouTube](https://github.com/naveenland4/News_Channels/actions/workflows/m3u_Generator.yml/badge.svg)](https://github.com/naveenland4/News_Channels/actions/workflows/m3u_Generator.yml)
 
@@ -22,8 +22,8 @@ Paste this URL: '[https://raw.githubusercontent.com/naveenland4/YouTube_to_m3u/m
 
 ### Run the tool on your local machine
 ``` bash
-git clone https://github.com/naveenland4/YouTube_to_m3u.git
-cd YouTube_to_m3u
+git clone https://github.com/naveenland4/News_Channels.git
+cd News_Channels
 chmod +x autorun.sh
 ./autorun.sh
 ```
