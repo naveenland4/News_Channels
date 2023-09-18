@@ -5,7 +5,7 @@
 
 ``` bash
 
-https://raw.githubusercontent.com/naveenland4/YouTube_to_m3u/main/news_channels.m3u.m3u
+https://raw.githubusercontent.com/naveenland4/News_Channels/main/news_channels.m3u
 ```
 
 Works best with : [Perfect Player IPTV](http://niklabs.com/) ,
