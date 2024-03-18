@@ -18,7 +18,7 @@ Updated m3u links of YouTube live channels, **auto-updated every 2 hours**.
 
 
 ### Usage
-Paste this URL: '[https://raw.githubusercontent.com/naveenland4/YouTube_to_m3u/main/youtube.m3u](https://raw.githubusercontent.com/naveenland4/News_Channels/main/news_channels.m3u)' to any player which supports M3U playlists
+Paste this URL: '[https://raw.githubusercontent.com/naveenland4/YouTube_to_m3u/main/news_channels.m3u](https://raw.githubusercontent.com/naveenland4/News_Channels/main/news_channels.m3u)' to any player which supports M3U playlists
 
 ### Run the tool on your local machine
 ``` bash
