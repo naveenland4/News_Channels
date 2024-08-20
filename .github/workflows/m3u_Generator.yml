@@ -6,11 +6,11 @@ name: M3U generator
 on:
   schedule:
     - cron: '0 0/2 * * *'
-    
+
   pull_request:
     branches:
       - main
-  
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -35,19 +35,19 @@ jobs:
         run: |
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
-      
+
       - name: Main
         run: |
           pwd
           chmod +x autorun.sh
           ./autorun.sh
-        
+
       - name: git add
         run: |
           git add -A
-          ls -la 
-          
+          ls -la
+
       - name: commit & push
         run: |
           git commit -m "links are updated"
-          git push
+          git push -f
