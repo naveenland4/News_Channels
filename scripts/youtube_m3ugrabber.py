@@ -20,58 +20,93 @@ https://raw.githubusercontent.com/naveenland4/UTLive/main/assets/info.m3u8
 https://live.creacast.com/grandlilletv/smil:grandlilletv.smil/playlist.m3u8
 '''
 
-import requests
 import os
-import sys
+import re
+import shutil
+import subprocess
+import requests
 
-windows = False
-if 'win' in sys.platform:
-    windows = True
+FALLBACK_URL = 'https://raw.githubusercontent.com/naveenland4/News_Channels/main/assets/info.m3u8'
+COOKIES_FILE = '../cookies.txt'
+
+HEADERS = {
+    'User-Agent': (
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+        'AppleWebKit/537.36 (KHTML, like Gecko) '
+        'Chrome/131.0.0.0 Safari/537.36'
+    ),
+    'Accept-Language': 'en-US,en;q=0.9',
+}
+
+s = requests.Session()
+s.headers.update(HEADERS)
+
+
+def grab_with_ytdlp(url):
+    if not shutil.which('yt-dlp'):
+        return None
+
+    cmd = ['yt-dlp', '-g', '-f', 'best', '--no-warnings', '--no-playlist']
+    if os.path.isfile(COOKIES_FILE):
+        cmd.extend(['--cookies', COOKIES_FILE])
+    cmd.append(url)
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=25,
+        )
+        lines = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+        for line in lines:
+            if '.m3u8' in line:
+                return line
+        if lines and lines[0].startswith('https://'):
+            return lines[0]
+    except (subprocess.SubprocessError, OSError):
+        pass
+
+    return None
+
 
 def grab(url):
-    response = s.get(url, timeout=15).text
-    if '.m3u8' not in response:
-        response = requests.get(url).text
-        if '.m3u8' not in response:
-            if windows:
-                print('https://raw.githubusercontent.com/naveenland4/News_Channels/main/assets/info.m3u8')
-                return
-            #os.system(f'wget {url} -O temp.txt')
-            os.system(f'curl "{url}" > temp.txt')
-            response = ''.join(open('temp.txt').readlines())
-            if '.m3u8' not in response:
-                print('https://raw.githubusercontent.com/naveenland4/News_Channels/main/assets/info.m3u8')
-                return
-    end = response.find('.m3u8') + 5
-    tuner = 100
-    while True:
-        if 'https://' in response[end-tuner : end]:
-            link = response[end-tuner : end]
-            start = link.find('https://')
-            end = link.find('.m3u8') + 5
-            break
-        else:
-            tuner += 5
-    print(f"{link[start : end]}")
+    # 1. Fast HTML check with browser headers
+    try:
+        response = s.get(url, timeout=15).text.replace('\\/', '/')
+        match = re.search(r'https://[^\s"\'\\]+\.m3u8', response)
+        if match:
+            print(match.group(0))
+            return
+    except requests.RequestException:
+        pass
+
+    # 2. Fallback to yt-dlp when raw HTML does not expose the .m3u8 link
+    ytdlp_url = grab_with_ytdlp(url)
+    if ytdlp_url:
+        print(ytdlp_url)
+        return
+
+    # 3. Final fallback if stream is offline or blocked
+    print(FALLBACK_URL)
+
 
 print('#EXTM3U x-tvg-url="https://github.com/botallen/epg/releases/download/latest/epg.xml.gz"')
 print(banner)
-s = requests.Session()
-with open('../youtube_channel_info.txt') as f:
+
+with open('../youtube_channel_info.txt', encoding='utf-8') as f:
     for line in f:
         line = line.strip()
         if not line or line.startswith('~~'):
             continue
         if not line.startswith('https:'):
-            line = line.split('|')
-            ch_name = line[0].strip()
-            grp_title = line[1].strip().title()
-            tvg_logo = line[2].strip()
-            tvg_id = line[3].strip()
+            parts = line.split('|')
+            if len(parts) < 4:
+                continue
+            ch_name = parts[0].strip()
+            grp_title = parts[1].strip().title()
+            tvg_logo = parts[2].strip()
+            tvg_id = parts[3].strip()
             print(f'\n#EXTINF:-1 group-title="{grp_title}" tvg-logo="{tvg_logo}" tvg-id="{tvg_id}", {ch_name}')
         else:
             grab(line)
-            
-if 'temp.txt' in os.listdir():
-    os.system('rm temp.txt')
-    os.system('rm watch*')
