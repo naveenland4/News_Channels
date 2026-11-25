@@ -24,10 +24,11 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import requests
 
 FALLBACK_URL = 'https://raw.githubusercontent.com/naveenland4/News_Channels/main/assets/info.m3u8'
-COOKIES_FILE = '../cookies.txt'
+COOKIES_FILE = '/tmp/cookies.txt'
 
 HEADERS = {
     'User-Agent': (
@@ -44,10 +45,17 @@ s.headers.update(HEADERS)
 
 def grab_with_ytdlp(url):
     if not shutil.which('yt-dlp'):
+        print('[WARN] yt-dlp not found in PATH', file=sys.stderr)
         return None
 
-    cmd = ['yt-dlp', '-g', '-f', 'best', '--no-warnings', '--no-playlist']
-    if os.path.isfile(COOKIES_FILE):
+    cmd = [
+        'yt-dlp',
+        '-g',
+        '-f', 'best[protocol^=m3u8]/best',
+        '--no-warnings',
+        '--no-playlist',
+    ]
+    if os.path.isfile(COOKIES_FILE) and os.path.getsize(COOKIES_FILE) > 0:
         cmd.extend(['--cookies', COOKIES_FILE])
     cmd.append(url)
 
@@ -56,7 +64,7 @@ def grab_with_ytdlp(url):
             cmd,
             capture_output=True,
             text=True,
-            timeout=25,
+            timeout=30,
         )
         lines = [line.strip() for line in result.stdout.splitlines() if line.strip()]
         for line in lines:
@@ -64,30 +72,36 @@ def grab_with_ytdlp(url):
                 return line
         if lines and lines[0].startswith('https://'):
             return lines[0]
-    except (subprocess.SubprocessError, OSError):
-        pass
+
+        err = result.stderr.strip().splitlines()
+        reason = err[-1] if err else f'exit code {result.returncode}'
+        print(f'[FAIL] {url} -> {reason}', file=sys.stderr)
+    except (subprocess.SubprocessError, OSError) as e:
+        print(f'[FAIL] {url} -> {e}', file=sys.stderr)
 
     return None
 
 
 def grab(url):
-    # 1. Fast HTML check with browser headers
+    # 1. Fast HTML check
     try:
         response = s.get(url, timeout=15).text.replace('\\/', '/')
         match = re.search(r'https://[^\s"\'\\]+\.m3u8', response)
         if match:
+            print(f'[OK-HTML] {url}', file=sys.stderr)
             print(match.group(0))
             return
     except requests.RequestException:
         pass
 
-    # 2. Fallback to yt-dlp when raw HTML does not expose the .m3u8 link
+    # 2. Fallback to yt-dlp
     ytdlp_url = grab_with_ytdlp(url)
     if ytdlp_url:
+        print(f'[OK-YTDLP] {url}', file=sys.stderr)
         print(ytdlp_url)
         return
 
-    # 3. Final fallback if stream is offline or blocked
+    # 3. Fallback when offline or blocked
     print(FALLBACK_URL)
 
 
