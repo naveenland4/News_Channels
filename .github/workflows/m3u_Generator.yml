@@ -23,6 +23,13 @@ jobs:
           sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
           sudo chmod a+rx /usr/local/bin/yt-dlp
 
+      - name: Load YouTube cookies
+        if: ${{ secrets.YT_COOKIES != '' }}
+        env:
+          YT_COOKIES: ${{ secrets.YT_COOKIES }}
+        run: |
+          printf '%s' "$YT_COOKIES" > /tmp/cookies.txt
+
       - name: Git config
         run: |
           git config --global user.email "action@github.com"
@@ -33,6 +40,7 @@ jobs:
           pwd
           chmod +x autorun.sh
           ./autorun.sh
+          rm -f /tmp/cookies.txt
 
       - name: Commit & push
         run: |
