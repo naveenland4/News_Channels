@@ -16,12 +16,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
+          package-manager-cache: false
 
       - name: Install yt-dlp
         run: |
@@ -51,7 +52,7 @@ jobs:
           ./autorun.sh
           rm -f /tmp/cookies.txt
 
-- name: Commit & push
+      - name: Commit & push
         run: |
           if [ ! -s news_channels.m3u ]; then
             echo "news_channels.m3u is empty; skipping commit."
