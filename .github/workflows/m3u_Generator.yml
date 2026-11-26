@@ -51,8 +51,12 @@ jobs:
           ./autorun.sh
           rm -f /tmp/cookies.txt
 
-      - name: Commit & push
+- name: Commit & push
         run: |
+          if [ ! -s news_channels.m3u ]; then
+            echo "news_channels.m3u is empty; skipping commit."
+            exit 1
+          fi
           git add -A
           ls -la
           if ! git diff --staged --quiet; then
