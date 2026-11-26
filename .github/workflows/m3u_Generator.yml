@@ -2,7 +2,7 @@ name: M3U generator
 
 on:
   schedule:
-    - cron: '0 0/2 * * *'
+    - cron: '0 */2 * * *'
   pull_request:
     branches:
       - main
@@ -18,17 +18,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - name: Install yt-dlp
         run: |
-          sudo curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
+          sudo curl -fsSL https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
           sudo chmod a+rx /usr/local/bin/yt-dlp
 
       - name: Load YouTube cookies
-        if: ${{ secrets.YT_COOKIES != '' }}
         env:
           YT_COOKIES: ${{ secrets.YT_COOKIES }}
         run: |
-          printf '%s' "$YT_COOKIES" > /tmp/cookies.txt
+          if [ -n "$YT_COOKIES" ]; then
+            printf '%s' "$YT_COOKIES" > /tmp/cookies.txt
+            echo "Cookies loaded."
+          else
+            echo "No YT_COOKIES secret set; continuing without cookies."
+          fi
 
       - name: Git config
         run: |
